@@ -4,7 +4,7 @@
 
 ## Score
 
-A native macOS football scores app. Follow every match of the day across competitions worldwide, catch the games in progress with live updates, browse league rounds and standings, and open any match for its events, statistics and details, all in a clean interface with no ads or clutter.
+A native macOS sports scores app, starting with football. Follow every match of the day across competitions worldwide, catch the games in progress with live updates, browse league rounds and standings, and open any match for its events, statistics and details, all in a clean interface with no ads or clutter.
 
 ### License
 
