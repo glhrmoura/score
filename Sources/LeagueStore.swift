@@ -112,19 +112,31 @@ final class LeagueStore {
         }
     }
 
+    private var playsToday: Bool {
+        matches.values.contains { Calendar.current.isDateInToday($0.kickoff) }
+    }
+
     private var pollInterval: Double {
-        inMatchWindow ? 30 : 300
+        if inMatchWindow { return 30 }
+        return playsToday ? 60 : 300
     }
 
     private func merge(_ fresh: [Match]) {
         var next = matches
         for var match in fresh {
-            if match.stage == nil, let previous = next[match.id]?.stage {
-                match.stage = previous
+            if match.stage == nil {
+                match.stage = next[match.id]?.stage ?? Self.neighbourStage(of: match, in: next.values)
             }
             next[match.id] = match
         }
         matches = next
+    }
+
+    private static func neighbourStage(of match: Match, in pool: Dictionary<String, Match>.Values) -> String? {
+        pool
+            .filter { $0.section == match.section && $0.stage != nil && $0.id != match.id }
+            .min { abs($0.kickoff.timeIntervalSince(match.kickoff)) < abs($1.kickoff.timeIntervalSince(match.kickoff)) }?
+            .stage
     }
 
     private func refresh(season: Bool) async {
@@ -140,7 +152,7 @@ final class LeagueStore {
                 merge(try await client.season(discovered))
                 lastSeasonLoad = .now
             }
-            if let config, season || inMatchWindow, let today = try? await client.today(config) {
+            if let config, season || inMatchWindow || playsToday, let today = try? await client.today(config) {
                 merge(today)
             }
             updatedAt = .now
