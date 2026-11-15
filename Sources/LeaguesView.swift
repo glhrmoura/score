@@ -226,7 +226,7 @@ struct Flag: View {
             } else {
                 Image(systemName: country.regionSymbol)
                     .font(.system(size: width * 0.62, weight: .regular))
-                    .foregroundStyle(Palette.pitch)
+                    .foregroundStyle(Palette.primaryInk)
                     .frame(width: width, height: width * 0.68)
             }
         }
