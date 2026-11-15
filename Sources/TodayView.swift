@@ -176,12 +176,12 @@ struct DayChip: View {
                     .font(.ui(12.5, 650))
                     .monospacedDigit()
             }
-            .foregroundStyle(isToday ? Palette.live : (selected || hovering ? Palette.ink : Palette.inkSoft))
+            .foregroundStyle(isToday ? Palette.primaryInk : (selected || hovering ? Palette.ink : Palette.inkSoft))
             .frame(minWidth: 50, maxWidth: .infinity)
             .frame(height: 44)
             .overlay(alignment: .bottom) {
                 Rectangle()
-                    .fill(selected ? (isToday ? Palette.live : Palette.ink) : .clear)
+                    .fill(selected ? (isToday ? Palette.primary : Palette.ink) : .clear)
                     .frame(height: 2)
             }
             .contentShape(Rectangle())
@@ -301,7 +301,7 @@ struct CompetitionBlock: View {
                             .foregroundStyle(.white)
                             .frame(minWidth: 22, minHeight: 20)
                             .padding(.horizontal, 2)
-                            .background(RoundedRectangle(cornerRadius: 4, style: .continuous).fill(Palette.live))
+                            .background(RoundedRectangle(cornerRadius: 4, style: .continuous).fill(Palette.primary))
                             .help(live == 1 ? "1 jogo ao vivo" : "\(live) jogos ao vivo")
                     }
                     Text("\(competition.matches.count)")
