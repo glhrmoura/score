@@ -41,6 +41,16 @@ final class Catalog {
         Country.regionSlugs.compactMap { slug in countries.first { $0.slug == slug } }
     }
 
+    func country(named name: String) -> Country? {
+        let key = Self.fold(name)
+        return countries.first { Self.fold($0.name) == key }
+    }
+
+    private static func fold(_ text: String) -> String {
+        text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .ptBR)
+            .trimmingCharacters(in: .whitespaces)
+    }
+
     var nations: [Country] {
         countries
             .filter { !$0.isRegion }
