@@ -72,6 +72,7 @@ struct Match: Identifiable, Hashable, Sendable {
     let awayScore: Int?
     let phase: Phase
     let phaseStart: Date?
+    var addedTime: Int? = nil
 
     var round: Int? {
         StageName.roundNumber(stage)
@@ -86,22 +87,39 @@ struct Match: Identifiable, Hashable, Sendable {
         let elapsed = max(0, Int(now.timeIntervalSince(phaseStart) / 60)) + 1
         switch phase {
         case .firstHalf:
-            return elapsed > 45 ? "45+" : "\(elapsed)'"
+            return elapsed > 45 ? "45+\(elapsed - 45)'" : "\(elapsed)'"
         case .secondHalf:
             let minute = 45 + elapsed
-            return minute > 90 ? "90+" : "\(minute)'"
+            return minute > 90 ? "90+\(minute - 90)'" : "\(minute)'"
         default:
             return nil
         }
     }
 
-    func updated(phase: Phase, homeScore: Int?, awayScore: Int?, phaseStart: Date?) -> Match {
+    func clock(at now: Date) -> String? {
+        guard let phaseStart else { return nil }
+        let offset: Int
+        switch phase {
+        case .firstHalf: offset = 0
+        case .secondHalf: offset = 45 * 60
+        default: return nil
+        }
+        let seconds = offset + max(0, Int(now.timeIntervalSince(phaseStart)))
+        return String(format: "%02d:%02d", seconds / 60, seconds % 60)
+    }
+
+    func updated(phase: Phase, homeScore: Int?, awayScore: Int?, phaseStart: Date?, addedTime: Int? = nil) -> Match {
         Match(
             id: id, kickoff: kickoff, stage: stage, section: section, sectionTitle: sectionTitle,
             home: home, away: away,
             homeScore: homeScore ?? self.homeScore, awayScore: awayScore ?? self.awayScore,
-            phase: phase, phaseStart: phaseStart ?? self.phaseStart
+            phase: phase, phaseStart: phaseStart ?? self.phaseStart,
+            addedTime: phase.isLive ? addedTime : nil
         )
+    }
+
+    func taking(_ fresh: Match) -> Match {
+        updated(phase: fresh.phase, homeScore: fresh.homeScore, awayScore: fresh.awayScore, phaseStart: fresh.phaseStart, addedTime: fresh.addedTime)
     }
 
     var winner: Team? {
