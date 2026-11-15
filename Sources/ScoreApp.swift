@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 @main
-struct PlacarApp: App {
+struct ScoreApp: App {
     @State private var hub = LeagueHub()
     @State private var catalog = Catalog()
 
@@ -13,7 +13,7 @@ struct PlacarApp: App {
     }
 
     var body: some Scene {
-        Window("Placar", id: "main") {
+        Window("Score", id: "main") {
             ContentView()
                 .environment(hub)
                 .environment(catalog)
