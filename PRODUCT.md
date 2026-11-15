@@ -12,7 +12,7 @@ General football fans on a Mac who want to check scores, live matches and league
 
 ## Product Purpose
 
-Placar is a native macOS football scores app. It shows every match of the day across competitions worldwide, the matches in progress, league rounds and standings, and a match page with events, statistics and match info. Success means a fan finds the match they care about and reads its state at a glance.
+Score is a native macOS football scores app. It shows every match of the day across competitions worldwide, the matches in progress, league rounds and standings, and a match page with events, statistics and match info. Success means a fan finds the match they care about and reads its state at a glance.
 
 ## Positioning
 
@@ -33,7 +33,7 @@ The window stays open next to other work. Users check it in short bursts during 
 
 ## Brand Commitments
 
-- Name: Placar.
+- Name: Score.
 - Typeface: Score, the app's own font, derived from Archivo under the SIL OFL (Resources/Fonts/Score.ttf). It has weights 400 to 900, widths 82 to 100 and tabular digits by default. Outfit was replaced on 2026-11-15.
 
 ## Product Principles
