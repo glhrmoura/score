@@ -97,22 +97,18 @@ struct SpineItem: View {
     let action: () -> Void
     @State private var hovering = false
 
-    private var live: Bool {
-        (badge ?? 0) > 0
-    }
-
     var body: some View {
         Button(action: action) {
             VStack(spacing: 4) {
                 Image(systemName: symbol)
                     .font(.system(size: 17, weight: .semibold))
                     .frame(height: 24)
-                    .foregroundStyle(live && !active ? Palette.primaryInk : (active ? Palette.onPrimary : Palette.spineInk.opacity(hovering ? 1 : 0.72)))
+                    .foregroundStyle(active ? Palette.onPrimary : Palette.spineInk.opacity(hovering ? 1 : 0.72))
                 Text(title)
                     .font(.ui(11, active ? 750 : 600))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
-                    .foregroundStyle(live && !active ? Palette.primaryInk : (active ? Palette.onPrimary : Palette.spineInk.opacity(hovering ? 1 : 0.72)))
+                    .foregroundStyle(active ? Palette.onPrimary : Palette.spineInk.opacity(hovering ? 1 : 0.72))
             }
             .frame(width: 72, height: 62)
             .background(
