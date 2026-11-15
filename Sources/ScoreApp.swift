@@ -18,6 +18,7 @@ struct ScoreApp: App {
                 .environment(hub)
                 .environment(catalog)
                 .frame(minWidth: 1080, minHeight: 640)
+                .task { await catalog.loadCountries() }
         }
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 1300, height: 840)
