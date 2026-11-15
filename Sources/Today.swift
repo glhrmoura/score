@@ -103,6 +103,7 @@ final class TodayStore {
     @ObservationIgnored private let client = FeedClient()
     @ObservationIgnored private var loadedAt: [Int: Date] = [:]
     @ObservationIgnored private var loop: Task<Void, Never>?
+    @ObservationIgnored private var settled: [String: Match] = [:]
 
     var refreshing: Bool {
         loading.contains(offset)
@@ -134,6 +135,7 @@ final class TodayStore {
             while !Task.isCancelled {
                 guard let self else { return }
                 await load(0, force: true)
+                await checkStoppage()
                 if offset != 0 { await load(offset, force: false) }
                 try? await Task.sleep(for: .seconds(busy ? 30 : 120))
             }
@@ -142,6 +144,42 @@ final class TodayStore {
 
     func reload() {
         Task { await load(offset, force: true) }
+    }
+
+    func apply(_ fresh: Match) {
+        if !fresh.phase.isLive, fresh.phase != .scheduled { settled[fresh.id] = fresh }
+        for (day, list) in days {
+            guard list.contains(where: { $0.matches.contains { $0.id == fresh.id } }) else { continue }
+            days[day] = list.map { competition in
+                var copy = competition
+                copy.matches = competition.matches.map { $0.id == fresh.id ? $0.taking(fresh) : $0 }
+                return copy
+            }
+        }
+    }
+
+    private func reconcile(_ fresh: [Competition]) -> [Competition] {
+        guard !settled.isEmpty else { return fresh }
+        return fresh.map { competition in
+            var copy = competition
+            copy.matches = competition.matches.map { match in
+                guard match.phase.isLive, let done = settled[match.id] else { return match }
+                return match.taking(done)
+            }
+            return copy
+        }
+    }
+
+    private func checkStoppage() async {
+        let now = Date.now
+        let candidates = (days[0] ?? []).flatMap(\.matches).filter { match in
+            guard let start = match.phaseStart else { return false }
+            let minutes = now.timeIntervalSince(start) / 60
+            return (match.phase == .firstHalf || match.phase == .secondHalf) && minutes >= 44
+        }
+        for match in candidates.prefix(8) {
+            if let fresh = try? await client.status(of: match) { apply(fresh) }
+        }
     }
 
     private var busy: Bool {
@@ -161,7 +199,7 @@ final class TodayStore {
         loading.insert(day)
         defer { loading.remove(day) }
         do {
-            days[day] = try await client.day(offset: day)
+            days[day] = reconcile(try await client.day(offset: day))
             failures[day] = nil
             loadedAt[day] = .now
             if day == 0 { updatedAt = .now }
