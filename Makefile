@@ -1,4 +1,4 @@
-APP = Placar
+APP = Score
 BUILD = build
 BUNDLE = $(BUILD)/$(APP).app
 SOURCES = $(wildcard Sources/*.swift)
