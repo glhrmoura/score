@@ -16,6 +16,9 @@ struct LeaguesIndex: View {
     @Environment(LeagueHub.self) private var hub
     @Environment(Catalog.self) private var catalog
     @State private var query = ""
+    @State private var found: [League] = []
+
+    private let client = FeedClient()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -40,20 +43,21 @@ struct LeaguesIndex: View {
             Hairline()
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
-                    let featured = League.featured.filter(matches)
                     let favorites = hub.favorites.filter(matches)
-                    if !favorites.isEmpty {
+                    let known = Set(favorites.map(\.id))
+                    let remote = query.isEmpty ? [] : found.filter { !known.contains($0.id) }
+                    if !remote.isEmpty {
                         Section {
-                            LeagueTiles(leagues: favorites).padding(.bottom, 28)
+                            LeagueList(leagues: remote)
                         } header: {
-                            LetterHeader(text: "Favoritas")
+                            LetterHeader(text: "Campeonatos")
                         }
                     }
-                    if !featured.isEmpty {
+                    if !favorites.isEmpty {
                         Section {
-                            LeagueTiles(leagues: featured).padding(.bottom, 28)
+                            LeagueList(leagues: favorites)
                         } header: {
-                            LetterHeader(text: "Principais")
+                            LetterHeader(text: "Favoritas")
                         }
                     }
                     let regions = catalog.regions.filter(matches)
@@ -79,17 +83,31 @@ struct LeaguesIndex: View {
                                 .foregroundStyle(Palette.inkSoft)
                         }
                         .padding(.top, 30)
-                    } else if !query.isEmpty, letters.isEmpty, regions.isEmpty, featured.isEmpty, favorites.isEmpty {
+                    } else if !query.isEmpty, letters.isEmpty, regions.isEmpty, favorites.isEmpty, remote.isEmpty {
                         Notice(text: "Nada encontrado para “\(query)”.")
                     }
                 }
                 .padding(.horizontal, 40)
                 .padding(.bottom, 40)
                 .frame(maxWidth: 980, alignment: .leading)
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .task { await catalog.loadCountries() }
+        .task(id: query) { await search(query) }
+    }
+
+    private func search(_ raw: String) async {
+        let text = raw.trimmingCharacters(in: .whitespaces)
+        guard text.count >= 2 else {
+            found = []
+            return
+        }
+        try? await Task.sleep(for: .milliseconds(280))
+        guard !Task.isCancelled else { return }
+        let leagues = (try? await client.searchCompetitions(text)) ?? []
+        guard !Task.isCancelled else { return }
+        found = Array(leagues.prefix(12))
     }
 
     private var letters: [(letter: String, countries: [Country])] {
@@ -129,52 +147,60 @@ struct LetterHeader: View {
     }
 }
 
-struct LeagueTiles: View {
-    @Environment(LeagueHub.self) private var hub
+struct LeagueList: View {
     let leagues: [League]
 
     var body: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 200, maximum: 280), spacing: 10)], alignment: .leading, spacing: 10) {
-            ForEach(leagues) { league in
-                LeagueTile(league: league)
-            }
+        LazyVStack(spacing: 0) {
+            ForEach(leagues) { LeagueRow(league: $0) }
         }
     }
 }
 
-struct LeagueTile: View {
+struct LeagueRow: View {
     @Environment(LeagueHub.self) private var hub
+    @Environment(Catalog.self) private var catalog
     let league: League
     @State private var hovering = false
+
+    private var country: Country {
+        let slug = String(league.path.split(separator: "/").first ?? "")
+        return catalog.countries.first { $0.slug == slug }
+            ?? Country(slug: slug, english: slug.replacingOccurrences(of: "-", with: " "))
+    }
 
     var body: some View {
         Button {
             hub.select(league)
         } label: {
             HStack(spacing: 10) {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(league.name)
-                        .font(.ui(13.5, 620))
-                        .foregroundStyle(Palette.ink)
-                        .lineLimit(1)
-                    Text(league.country)
-                        .font(.ui(11.5, 500))
-                        .foregroundStyle(Palette.inkSoft)
-                        .lineLimit(1)
-                }
-                Spacer(minLength: 4)
+                Flag(country: country)
+                    .padding(.trailing, 4)
+                Text(league.name)
+                    .font(.ui(14, 560))
+                    .foregroundStyle(Palette.ink)
+                    .lineLimit(1)
+                Text(league.country)
+                    .font(.ui(12.5, 500))
+                    .foregroundStyle(Palette.inkSoft)
+                    .lineLimit(1)
+                Spacer(minLength: 8)
                 FavoriteButton(league: league, size: 12)
                     .opacity(hovering || hub.isFavorite(league) ? 1 : 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(hovering ? Palette.ink : Palette.inkFaint)
             }
-            .padding(.horizontal, 14)
-            .frame(height: 50)
-            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(hovering ? Palette.raised : Palette.surface))
-            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(hovering ? Palette.inkSoft : Palette.rule, lineWidth: 1))
+            .padding(.horizontal, 12)
+            .frame(height: 40)
+            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(hovering ? Palette.raised.opacity(0.7) : .clear))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
         .pointingHand()
+        .overlay(alignment: .bottom) { Hairline().padding(.leading, 50).padding(.trailing, 12).opacity(hovering ? 0 : 1) }
+        .padding(.horizontal, -12)
     }
 }
 
@@ -205,7 +231,8 @@ struct CountryRow: View {
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
         .pointingHand()
-        .overlay(alignment: .bottom) { Hairline().padding(.leading, 50).opacity(hovering ? 0 : 1) }
+        .overlay(alignment: .bottom) { Hairline().padding(.leading, 50).padding(.trailing, 12).opacity(hovering ? 0 : 1) }
+        .padding(.horizontal, -12)
     }
 }
 
@@ -287,8 +314,8 @@ struct CountryScreen: View {
                 }
                 .padding(.horizontal, 40)
                 .padding(.vertical, 18)
-                .frame(maxWidth: 980)
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: 980, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .task(id: country.slug) { await catalog.loadCompetitions(of: country) }
@@ -323,7 +350,8 @@ struct CompetitionLink: View {
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
         .pointingHand()
-        .overlay(alignment: .bottom) { Hairline().padding(.leading, 12).opacity(hovering ? 0 : 1) }
+        .overlay(alignment: .bottom) { Hairline().padding(.horizontal, 12).opacity(hovering ? 0 : 1) }
+        .padding(.horizontal, -12)
     }
 }
 
