@@ -279,7 +279,7 @@ struct CompetitionBlock: View {
                 }
             } label: {
                 HStack(spacing: 12) {
-                    CompetitionLogo(url: competition.logo, fallback: competition.country)
+                    CompetitionFlag(competition: competition)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(competition.name)
                             .font(.ui(14.5, 700))
@@ -336,6 +336,20 @@ struct CompetitionBlock: View {
         competition.matches.sorted { lhs, rhs in
             if lhs.phase.isLive != rhs.phase.isLive { return lhs.phase.isLive }
             return lhs.kickoff == rhs.kickoff ? lhs.home.name < rhs.home.name : lhs.kickoff < rhs.kickoff
+        }
+    }
+}
+
+struct CompetitionFlag: View {
+    @Environment(Catalog.self) private var catalog
+    let competition: Competition
+
+    var body: some View {
+        if let country = catalog.country(named: competition.country) {
+            Flag(country: country, width: 26)
+                .frame(width: 28, height: 28)
+        } else {
+            CompetitionLogo(url: competition.logo, fallback: competition.country)
         }
     }
 }
