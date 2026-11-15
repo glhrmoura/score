@@ -2,6 +2,7 @@ import AppKit
 
 let output = URL(fileURLWithPath: CommandLine.arguments[1])
 let size = CommandLine.arguments.count > 2 ? Int(CommandLine.arguments[2])! : 1024
+let tight = CommandLine.arguments.count > 3 && CommandLine.arguments[3] == "tight"
 
 func color(_ hex: UInt32, _ alpha: CGFloat = 1) -> CGColor {
     CGColor(srgbRed: CGFloat((hex >> 16) & 0xFF) / 255, green: CGFloat((hex >> 8) & 0xFF) / 255, blue: CGFloat(hex & 0xFF) / 255, alpha: alpha)
@@ -9,13 +10,19 @@ func color(_ hex: UInt32, _ alpha: CGFloat = 1) -> CGColor {
 
 let space = CGColorSpace(name: CGColorSpace.sRGB)!
 let context = CGContext(data: nil, width: size, height: size, bitsPerComponent: 8, bytesPerRow: 0, space: space, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
-context.scaleBy(x: CGFloat(size) / 1024, y: CGFloat(size) / 1024)
+let canvas: CGFloat = tight ? 824 : 1024
+context.scaleBy(x: CGFloat(size) / canvas, y: CGFloat(size) / canvas)
+if tight {
+    context.translateBy(x: -100, y: -100)
+}
 
 let body = CGRect(x: 100, y: 100, width: 824, height: 824)
 let shape = CGPath(roundedRect: body, cornerWidth: 186, cornerHeight: 186, transform: nil)
 
 context.saveGState()
-context.setShadow(offset: CGSize(width: 0, height: -10), blur: 28, color: color(0x000000, 0.45))
+if !tight {
+    context.setShadow(offset: CGSize(width: 0, height: -10), blur: 28, color: color(0x000000, 0.45))
+}
 context.addPath(shape)
 context.setFillColor(color(0x0A44E8))
 context.fillPath()
