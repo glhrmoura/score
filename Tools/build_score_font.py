@@ -36,7 +36,7 @@ for record in list(name.names):
         text = record.toUnicode()
         text = text.replace("Archivo Roman", family).replace("ArchivoRoman", family).replace("Archivo", family)
         name.setName(text, record.nameID, record.platformID, record.platEncID, record.langID)
-name.setName("Score is a modified version of Archivo, made for the Placar app.", 10, 3, 1, 0x409)
+name.setName("Score is a modified version of Archivo, made for the Score app.", 10, 3, 1, 0x409)
 for record in name.names:
     if record.nameID in (1, 4, 6, 16, 25):
         print(record.nameID, record.toUnicode())
