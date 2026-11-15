@@ -13,6 +13,9 @@ enum Palette {
     static let frame = dynamic(light: 0x1B1F3B, dark: 0x3A3A3E)
     static let spine = dynamic(light: 0x1B1F3B, dark: 0x0D0D0E)
     static let spineInk = dynamic(light: 0xF4F1EA, dark: 0xEDEDEF)
+    static let primary = dynamic(light: 0x0A44E8, dark: 0x0A44E8)
+    static let primaryInk = dynamic(light: 0x0A44E8, dark: 0x7096FF)
+    static let onPrimary = Color.white
     static let pitch = dynamic(light: 0x1F8A7E, dark: 0x3CC2B1)
     static let live = dynamic(light: 0xE63946, dark: 0xFF5A66)
     static let gold = dynamic(light: 0xD9A520, dark: 0xF1C453)
@@ -115,13 +118,19 @@ struct LiveDot: View {
 
     var body: some View {
         Circle()
-            .fill(Palette.live)
+            .fill(Palette.primaryInk)
             .frame(width: size, height: size)
             .background(
                 Circle()
-                    .fill(Palette.live.opacity(0.35))
-                    .scaleEffect(pulse ? 2.4 : 1)
+                    .fill(Palette.primaryInk.opacity(0.6))
+                    .scaleEffect(pulse ? 2.6 : 1)
                     .opacity(pulse ? 0 : 1)
+            )
+            .background(
+                Circle()
+                    .strokeBorder(Palette.primaryInk, lineWidth: 1.5)
+                    .scaleEffect(pulse ? 3.2 : 1)
+                    .opacity(pulse ? 0 : 0.9)
             )
             .onAppear {
                 withAnimation(.easeOut(duration: 1.4).repeatForever(autoreverses: false)) { pulse = true }
