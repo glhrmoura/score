@@ -107,17 +107,17 @@ struct SpineItem: View {
                 Image(systemName: symbol)
                     .font(.system(size: 17, weight: .semibold))
                     .frame(height: 24)
-                    .foregroundStyle(live ? Palette.live : (active ? Palette.spine : Palette.spineInk.opacity(hovering ? 1 : 0.72)))
+                    .foregroundStyle(live && !active ? Palette.primaryInk : (active ? Palette.onPrimary : Palette.spineInk.opacity(hovering ? 1 : 0.72)))
                 Text(title)
                     .font(.ui(11, active ? 750 : 600))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
-                    .foregroundStyle(live ? Palette.live : (active ? Palette.spine : Palette.spineInk.opacity(hovering ? 1 : 0.72)))
+                    .foregroundStyle(live && !active ? Palette.primaryInk : (active ? Palette.onPrimary : Palette.spineInk.opacity(hovering ? 1 : 0.72)))
             }
             .frame(width: 72, height: 62)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(active ? Palette.spineInk : Palette.spineInk.opacity(hovering ? 0.1 : 0))
+                    .fill(active ? Palette.primary : Palette.spineInk.opacity(hovering ? 0.1 : 0))
             )
             .contentShape(Rectangle())
         }
@@ -233,7 +233,7 @@ struct StatusLine: View {
                     LiveDot()
                     Text(live == 1 ? "1 jogo ao vivo" : "\(live) jogos ao vivo")
                         .font(.ui(12, 600))
-                        .foregroundStyle(Palette.live)
+                        .foregroundStyle(Palette.primaryInk)
                 }
             }
         }
