@@ -58,7 +58,6 @@ struct StageStrip: View {
         let allRounds = stages.allSatisfy { $0.round != nil }
         HStack(spacing: 10) {
             Spacer()
-            StepButton(symbol: "chevron.left", enabled: index > 0) { select(stages[index - 1].key) }
             Button {
                 open.toggle()
             } label: {
@@ -89,7 +88,6 @@ struct StageStrip: View {
                     open = false
                 }
             }
-            StepButton(symbol: "chevron.right", enabled: index < stages.count - 1) { select(stages[index + 1].key) }
         }
         .padding(.horizontal, 40)
         .frame(height: 56)
@@ -125,9 +123,9 @@ struct StagePicker: View {
                 }
             } else {
                 ScrollView {
-                    VStack(spacing: 4) {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 2), spacing: 6) {
                         ForEach(stages) { stage in
-                            PickerCell(label: stage.title, selected: stage.key == shown, current: stage.key == current, width: nil) {
+                            PickerCell(label: stage.title, selected: stage.key == shown, current: stage.key == current, width: nil, centered: true) {
                                 pick(stage.key)
                             }
                         }
@@ -137,7 +135,7 @@ struct StagePicker: View {
             }
         }
         .padding(16)
-        .frame(width: allRounds ? 300 : 260, alignment: .leading)
+        .frame(width: allRounds ? 300 : 320, alignment: .leading)
         .background(Palette.surface)
     }
 }
@@ -147,54 +145,28 @@ struct PickerCell: View {
     let selected: Bool
     let current: Bool
     let width: CGFloat?
+    var centered = false
     let action: () -> Void
     @State private var hovering = false
 
     var body: some View {
         Button(action: action) {
             Text(label)
-                .font(.ui(13.5, selected ? 750 : 600))
+                .font(.ui(13.5, selected || current ? 750 : 600))
                 .monospacedDigit()
                 .lineLimit(1)
-                .foregroundStyle(selected ? (current ? Palette.onPrimary : Palette.canvas) : (current ? Palette.primaryInk : Palette.ink))
-                .padding(.horizontal, width == nil ? 12 : 0)
-                .frame(width: width, height: 34, alignment: width == nil ? .leading : .center)
-                .frame(maxWidth: width == nil ? .infinity : nil, alignment: .leading)
-                .background(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(selected ? (current ? Palette.primary : Palette.ink) : (hovering ? Palette.raised : .clear))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .strokeBorder(current && !selected ? Palette.primary.opacity(0.6) : .clear, lineWidth: 1)
-                )
-                .contentShape(Rectangle())
+                .minimumScaleFactor(0.8)
+            .foregroundStyle(selected ? (current ? Palette.onPrimary : Palette.canvas) : (current ? Palette.primaryInk : Palette.ink))
+            .padding(.horizontal, width == nil ? 10 : 0)
+            .frame(width: width, height: 34, alignment: width == nil && !centered ? .leading : .center)
+            .frame(maxWidth: width == nil ? .infinity : nil, alignment: centered ? .center : .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(selected ? (current ? Palette.primary : Palette.ink) : (current ? Palette.primary.opacity(hovering ? 0.26 : 0.16) : (hovering ? Palette.raised : .clear)))
+            )
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .onHover { hovering = $0 }
-        .pointingHand()
-    }
-}
-
-struct StepButton: View {
-    let symbol: String
-    let enabled: Bool
-    let action: () -> Void
-    @State private var hovering = false
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(Palette.ink)
-                .frame(width: 30, height: 30)
-                .background(Circle().fill(hovering ? Palette.raised : .clear))
-                .overlay(Circle().strokeBorder(Palette.rule, lineWidth: 1))
-                .contentShape(Circle())
-        }
-        .buttonStyle(.plain)
-        .disabled(!enabled)
-        .opacity(enabled ? 1 : 0.3)
         .onHover { hovering = $0 }
         .pointingHand()
     }
