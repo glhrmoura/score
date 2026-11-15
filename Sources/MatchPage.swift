@@ -28,6 +28,9 @@ struct MatchPage: View {
     @State private var h2h: [H2HGroup]?
     @State private var h2hFailed = false
     @State private var channels: [String]?
+    @State private var homeLogo: NSImage?
+    @State private var awayLogo: NSImage?
+    @State private var logosReady = false
     @State private var failure: String?
     @State private var tab: MatchTab = .summary
 
@@ -46,7 +49,7 @@ struct MatchPage: View {
             MatchTopBar(origin: origin) { hub.closeMatch() }
             ScrollView {
                 VStack(spacing: 0) {
-                    MatchHero(match: match)
+                    MatchHero(match: match, homeLogo: homeLogo, awayLogo: awayLogo, logosReady: logosReady)
                     MatchTabs(tabs: tabs, selection: tab) { tab = $0 }
                     Hairline()
                     content
@@ -56,6 +59,7 @@ struct MatchPage: View {
         }
         .background(Palette.canvas)
         .task(id: initial.id) { await poll() }
+        .task(id: initial.id) { await loadLogos() }
         .task(id: tab) {
             if tab == .h2h, h2h == nil { await loadH2H() }
             if tab == .details, channels == nil { channels = (try? await client.tv(initial.id)) ?? [] }
@@ -101,6 +105,26 @@ struct MatchPage: View {
         } else {
             SkeletonList(rows: 6, rowHeight: 46)
         }
+    }
+
+    private func loadLogos() async {
+        let logos = try? await client.largeLogos(initial.id)
+        async let home = Self.image(logos?.home)
+        async let away = Self.image(logos?.away)
+        let (homeImage, awayImage) = await (home, away)
+        withAnimation(.easeOut(duration: 0.2)) {
+            homeLogo = homeImage
+            awayLogo = awayImage
+            logosReady = true
+        }
+    }
+
+    private static func image(_ url: URL?) async -> NSImage? {
+        guard let url else { return nil }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 5
+        guard let (data, _) = try? await URLSession.shared.data(for: request) else { return nil }
+        return NSImage(data: data)
     }
 
     private func loadH2H() async {
@@ -190,10 +214,13 @@ struct MatchTopBar: View {
 
 struct MatchHero: View {
     let match: Match
+    var homeLogo: NSImage? = nil
+    var awayLogo: NSImage? = nil
+    var logosReady = true
 
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
-            HeroTeam(team: match.home)
+            HeroTeam(team: match.home, logo: homeLogo, ready: logosReady)
             VStack(spacing: 8) {
                 Text(match.kickoff.formatted(.dateTime.day(.twoDigits).month(.twoDigits).year().hour().minute().locale(.ptBR)))
                     .font(.ui(12.5, 600))
@@ -206,7 +233,7 @@ struct MatchHero: View {
             }
             .frame(width: 240)
             .padding(.top, 6)
-            HeroTeam(team: match.away)
+            HeroTeam(team: match.away, logo: awayLogo, ready: logosReady)
         }
         .padding(.horizontal, 40)
         .padding(.top, 30)
@@ -218,10 +245,25 @@ struct MatchHero: View {
 
 struct HeroTeam: View {
     let team: Team
+    var logo: NSImage? = nil
+    var ready = true
 
     var body: some View {
         VStack(spacing: 12) {
-            TeamBadge(team: team, size: 52)
+            Group {
+                if let logo {
+                    Image(nsImage: logo)
+                        .resizable()
+                        .interpolation(.high)
+                        .scaledToFit()
+                        .frame(width: 52, height: 52)
+                        .transition(.opacity)
+                } else if ready {
+                    TeamBadge(team: team, size: 52)
+                } else {
+                    Color.clear.frame(width: 52, height: 52)
+                }
+            }
                 .frame(width: 84, height: 84)
                 .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Color.white))
             Text(team.name)
