@@ -304,12 +304,14 @@ struct CompetitionBlock: View {
                             .background(RoundedRectangle(cornerRadius: 4, style: .continuous).fill(Palette.primary))
                             .help(live == 1 ? "1 jogo ao vivo" : "\(live) jogos ao vivo")
                     }
-                    Text("\(competition.matches.count)")
-                        .font(.ui(12.5, 650))
-                        .monospacedDigit()
-                        .foregroundStyle(Palette.ink)
-                        .frame(minWidth: 24, alignment: .trailing)
-                        .help(competition.matches.count == 1 ? "1 jogo" : "\(competition.matches.count) jogos")
+                    if live != competition.matches.count {
+                        Text("\(competition.matches.count)")
+                            .font(.ui(12.5, 650))
+                            .monospacedDigit()
+                            .foregroundStyle(Palette.ink)
+                            .frame(minWidth: 24, alignment: .trailing)
+                            .help(competition.matches.count == 1 ? "1 jogo" : "\(competition.matches.count) jogos")
+                    }
                     if !inline {
                         Image(systemName: "chevron.right")
                             .font(.system(size: 11, weight: .bold))
