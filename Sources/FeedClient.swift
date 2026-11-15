@@ -199,7 +199,8 @@ struct FeedClient: Sendable {
             phase: Phase.from(status: fields["DA"], detail: fields["DB"]),
             homeScore: fields["DE"].flatMap { Int($0) },
             awayScore: fields["DF"].flatMap { Int($0) },
-            phaseStart: fields["DD"].flatMap(TimeInterval.init).map { Date(timeIntervalSince1970: $0) }
+            phaseStart: fields["DD"].flatMap(TimeInterval.init).map { Date(timeIntervalSince1970: $0) },
+            addedTime: fields["CW"].flatMap { Int($0) }.flatMap { $0 > 0 ? $0 : nil }
         )
     }
 
