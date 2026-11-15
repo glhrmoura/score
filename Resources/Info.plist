@@ -9,15 +9,15 @@
 		<string>pt-BR</string>
 	</array>
 	<key>CFBundleName</key>
-	<string>Placar</string>
+	<string>Score</string>
 	<key>CFBundleDisplayName</key>
-	<string>Placar</string>
+	<string>Score</string>
 	<key>CFBundleIdentifier</key>
-	<string>app.placar.desktop</string>
+	<string>app.score.desktop</string>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
 	<key>CFBundleExecutable</key>
-	<string>Placar</string>
+	<string>Score</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
