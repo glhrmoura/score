@@ -57,10 +57,10 @@ struct MatchLine: View {
 
     @ViewBuilder
     private var background: some View {
-        if hovering {
+        if match.phase.isLive {
+            Palette.primary.opacity(hovering ? 0.18 : 0.09)
+        } else if hovering {
             Palette.raised.opacity(0.6)
-        } else if match.phase.isLive {
-            Palette.live.opacity(0.07)
         } else {
             Color.clear
         }
@@ -105,7 +105,7 @@ struct MatchLine: View {
             Text(text)
                 .font(.ui(12.5, 700))
                 .monospacedDigit()
-                .foregroundStyle(Palette.live)
+                .foregroundStyle(Palette.primaryInk)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
         }
@@ -132,7 +132,7 @@ struct MatchLine: View {
             Text("\(value)")
                 .font(.display(15, weight: lost(team) ? 500 : 750))
                 .monospacedDigit()
-                .foregroundStyle(match.phase.isLive ? Palette.live : (lost(team) ? Palette.inkSoft : Palette.ink))
+                .foregroundStyle(match.phase.isLive ? Palette.primaryInk : (lost(team) ? Palette.inkSoft : Palette.ink))
                 .contentTransition(.numericText(value: Double(value)))
                 .frame(height: 19)
         } else {
