@@ -156,7 +156,7 @@ struct PickerCell: View {
                 .font(.ui(13.5, selected ? 750 : 600))
                 .monospacedDigit()
                 .lineLimit(1)
-                .foregroundStyle(selected ? Palette.canvas : (current ? Palette.primaryInk : Palette.ink))
+                .foregroundStyle(selected ? (current ? Palette.onPrimary : Palette.canvas) : (current ? Palette.primaryInk : Palette.ink))
                 .padding(.horizontal, width == nil ? 12 : 0)
                 .frame(width: width, height: 34, alignment: width == nil ? .leading : .center)
                 .frame(maxWidth: width == nil ? .infinity : nil, alignment: .leading)
