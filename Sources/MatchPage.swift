@@ -117,7 +117,10 @@ struct MatchPage: View {
             async let fresh = try? client.detail(initial.id)
             let (updated, loaded) = await (status, fresh)
             withAnimation(.snappy) {
-                if let updated { live = updated }
+                if let updated {
+                    live = updated
+                    hub.today.apply(updated)
+                }
                 if let loaded { detail = loaded }
             }
             if detail == nil { failure = "Não deu pra carregar os detalhes deste jogo." }
@@ -197,7 +200,7 @@ struct MatchHero: View {
                     .monospacedDigit()
                     .foregroundStyle(Palette.inkSoft)
                 HeroScore(match: match)
-                TimelineView(.periodic(from: .now, by: 15)) { context in
+                TimelineView(.periodic(from: .now, by: match.phase.isLive ? 1 : 15)) { context in
                     HeroStatus(match: match, now: context.date)
                 }
             }
@@ -240,7 +243,7 @@ struct HeroScore: View {
                 digit(home)
                 Text("-")
                     .font(.display(44, weight: 700))
-                    .foregroundStyle(match.phase.isLive ? Palette.live : Palette.inkSoft)
+                    .foregroundStyle(match.phase.isLive ? Palette.primaryInk : Palette.inkSoft)
                 digit(away)
             }
         } else {
@@ -255,7 +258,7 @@ struct HeroScore: View {
         Text("\(value)")
             .font(.display(52, weight: 800))
             .monospacedDigit()
-            .foregroundStyle(match.phase.isLive ? Palette.live : Palette.ink)
+            .foregroundStyle(match.phase.isLive ? Palette.primaryInk : Palette.ink)
             .contentTransition(.numericText(value: Double(value)))
     }
 }
@@ -281,24 +284,52 @@ struct HeroStatus: View {
         case .abandoned:
             Text("Interrompido").font(.ui(13, 650)).foregroundStyle(Palette.live)
         case .halfTime:
-            liveText("Intervalo")
+            livePill("Intervalo", clock: nil)
         case .extraTime:
-            liveText("Prorrogação")
+            livePill("Prorrogação", clock: nil)
         case .penalties:
-            liveText("Pênaltis")
-        case .firstHalf, .secondHalf, .live:
-            liveText(match.minute(at: now) ?? "Ao vivo")
+            livePill("Pênaltis", clock: nil)
+        case .firstHalf:
+            livePill("1º tempo", clock: match.clock(at: now))
+        case .secondHalf:
+            livePill("2º tempo", clock: match.clock(at: now))
+        case .live:
+            livePill("Ao vivo", clock: nil)
         }
     }
 
-    private func liveText(_ text: String) -> some View {
-        HStack(spacing: 6) {
-            LiveDot(size: 6)
-            Text(text)
-                .font(.ui(14, 700))
-                .monospacedDigit()
-                .foregroundStyle(Palette.live)
+    private func livePill(_ label: String, clock: String?) -> some View {
+        HStack(spacing: 8) {
+            LiveDot(size: 7)
+            Text(label.uppercased())
+                .font(.band(12, 750))
+                .tracking(0.8)
+            if let clock {
+                Text(clock)
+                    .font(.ui(15, 750))
+                    .monospacedDigit()
+                    .contentTransition(.numericText())
+            }
+            if let added = match.addedTime {
+                HStack(spacing: 3) {
+                    Image(systemName: "stopwatch")
+                        .font(.system(size: 11, weight: .bold))
+                    Text("+\(added)")
+                        .font(.ui(13, 750))
+                        .monospacedDigit()
+                }
+                .foregroundStyle(Palette.onPrimary)
+                .padding(.horizontal, 7)
+                .frame(height: 20)
+                .background(Capsule().fill(Palette.primary))
+                .help("Acréscimo de \(added) min")
+            }
         }
+        .foregroundStyle(Palette.primaryInk)
+        .padding(.horizontal, 14)
+        .frame(height: 32)
+        .background(Capsule().fill(Palette.primary.opacity(0.18)))
+        .overlay(Capsule().strokeBorder(Palette.primary.opacity(0.45), lineWidth: 1))
     }
 }
 
@@ -684,7 +715,7 @@ struct StatRow: View {
             ZStack(alignment: leading ? .leading : .trailing) {
                 Capsule().fill(Palette.raised)
                 Capsule()
-                    .fill(lead ? Palette.pitch : Palette.inkSoft)
+                    .fill(lead ? Palette.primary : Palette.inkSoft)
                     .frame(width: max(0, proxy.size.width * fill))
             }
         }
