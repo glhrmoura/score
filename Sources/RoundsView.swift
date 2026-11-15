@@ -27,7 +27,7 @@ struct RoundsView: View {
                         } header: {
                             SectionBand(
                                 text: (Calendar.current.isDateInToday(group.day) ? "Hoje · " : "") + group.day.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(.ptBR)),
-                                color: Calendar.current.isDateInToday(group.day) ? Palette.live : Palette.inkSoft
+                                color: Calendar.current.isDateInToday(group.day) ? Palette.primaryInk : Palette.inkSoft
                             )
                         }
                     }
@@ -64,7 +64,7 @@ struct StageStrip: View {
             } label: {
                 HStack(spacing: 8) {
                     if stage.key == store.currentStage {
-                        Circle().fill(Palette.live).frame(width: 6, height: 6)
+                        Circle().fill(Palette.primary).frame(width: 6, height: 6)
                     }
                     Text(stage.title)
                         .font(.ui(14, 700))
@@ -156,17 +156,17 @@ struct PickerCell: View {
                 .font(.ui(13.5, selected ? 750 : 600))
                 .monospacedDigit()
                 .lineLimit(1)
-                .foregroundStyle(selected ? Palette.canvas : (current ? Palette.live : Palette.ink))
+                .foregroundStyle(selected ? Palette.canvas : (current ? Palette.primaryInk : Palette.ink))
                 .padding(.horizontal, width == nil ? 12 : 0)
                 .frame(width: width, height: 34, alignment: width == nil ? .leading : .center)
                 .frame(maxWidth: width == nil ? .infinity : nil, alignment: .leading)
                 .background(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(selected ? (current ? Palette.live : Palette.ink) : (hovering ? Palette.raised : .clear))
+                        .fill(selected ? (current ? Palette.primary : Palette.ink) : (hovering ? Palette.raised : .clear))
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .strokeBorder(current && !selected ? Palette.live.opacity(0.6) : .clear, lineWidth: 1)
+                        .strokeBorder(current && !selected ? Palette.primary.opacity(0.6) : .clear, lineWidth: 1)
                 )
                 .contentShape(Rectangle())
         }
@@ -243,7 +243,7 @@ struct StatusCell: View {
             Text(text)
                 .font(.ui(13, 700))
                 .monospacedDigit()
-                .foregroundStyle(Palette.live)
+                .foregroundStyle(Palette.primaryInk)
         }
     }
 }
