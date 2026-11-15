@@ -204,6 +204,19 @@ struct FeedClient: Sendable {
         )
     }
 
+    func largeLogos(_ id: String) async throws -> (home: URL?, away: URL?) {
+        var request = URLRequest(url: URL(string: "https://www.flashscore.com.br/jogo/futebol/\(id)/")!)
+        request.setValue("https://www.flashscore.com.br/", forHTTPHeaderField: "Referer")
+        request.timeoutInterval = 5
+        let page = try await text(request)
+        func image(_ side: String) -> URL? {
+            Self.match("\"\(side)\":\\[\\{[^\\]]*?\"image_path\":\"([^\"]+)\"", in: page)
+                .map { $0.replacingOccurrences(of: "\\/", with: "/") }
+                .flatMap(URL.init(string:))
+        }
+        return (image("home"), image("away"))
+    }
+
     func detail(_ id: String, sign: String = LeagueConfig.defaultSign) async throws -> MatchDetail {
         async let summaryBody = brazilFeed("df_sui_1_\(id)", sign: sign)
         async let statsBody = try? brazilFeed("df_st_1_\(id)", sign: sign)
