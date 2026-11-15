@@ -185,7 +185,6 @@ struct Header: View {
             }
             Spacer(minLength: 0)
             VStack(alignment: .trailing, spacing: 12) {
-                StatusLine()
                 SectionPicker(selection: $section)
                     .opacity(hasTables ? 1 : 0)
                     .allowsHitTesting(hasTables)
@@ -215,25 +214,6 @@ struct FavoriteButton: View {
         .buttonStyle(.plain)
         .help(on ? "Remover dos favoritos" : "Adicionar aos favoritos")
         .pointingHand()
-    }
-}
-
-struct StatusLine: View {
-    @Environment(LeagueStore.self) private var store
-
-    var body: some View {
-        HStack(spacing: 14) {
-            let live = store.liveMatches.count
-            if live > 0 {
-                HStack(spacing: 7) {
-                    LiveDot()
-                    Text(live == 1 ? "1 jogo ao vivo" : "\(live) jogos ao vivo")
-                        .font(.ui(12, 600))
-                        .foregroundStyle(Palette.primaryInk)
-                }
-            }
-        }
-        .frame(height: 18)
     }
 }
 
