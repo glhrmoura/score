@@ -73,7 +73,7 @@ struct Spine: View {
                 .scaledToFit()
                 .frame(width: 56, height: 56)
                 .padding(.bottom, 12)
-                .help("Placar")
+                .help("Score")
             SpineItem(title: "Hoje", symbol: "calendar", active: hub.screen == .today, badge: nil) { hub.show(.today) }
             SpineItem(title: "Ao vivo", symbol: "dot.radiowaves.left.and.right", active: hub.screen == .live, badge: hub.today.liveCount) { hub.show(.live) }
             SpineItem(title: "Ligas", symbol: "trophy", active: hub.screen == .leagues || hub.screen == .league, badge: nil) { hub.showLeagues() }
