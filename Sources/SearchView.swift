@@ -103,7 +103,7 @@ struct SearchIndex: View {
             ScrollView {
                 LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
                     if hub.query.trimmingCharacters(in: .whitespaces).count < 2 {
-                        Notice(text: "Digite o nome de um time ou de uma competição.")
+                        SearchPrompt()
                     } else if failed {
                         Notice(text: "Não deu pra buscar agora. Tente de novo em instantes.")
                     } else if hits.isEmpty && leagues.isEmpty && !searching {
@@ -380,5 +380,52 @@ struct DatedMatchLine: View {
             .padding(.leading, 40)
             MatchLine(match: match, origin: origin, leading: 12)
         }
+    }
+}
+
+struct SearchPrompt: View {
+    var body: some View {
+        VStack(spacing: 18) {
+            ZStack {
+                Circle()
+                    .fill(Palette.raised.opacity(0.6))
+                    .frame(width: 128, height: 128)
+                HStack(alignment: .bottom, spacing: 9) {
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .fill(Palette.primary)
+                        .frame(width: 24, height: 62)
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .fill(Palette.primary.opacity(0.45))
+                        .frame(width: 24, height: 38)
+                }
+                .offset(x: -8, y: -4)
+                ZStack {
+                    Circle()
+                        .fill(Palette.canvas.opacity(0.55))
+                        .frame(width: 46, height: 46)
+                    Circle()
+                        .strokeBorder(Palette.ink, lineWidth: 5)
+                        .frame(width: 46, height: 46)
+                    Capsule()
+                        .fill(Palette.ink)
+                        .frame(width: 6, height: 22)
+                        .offset(y: 30)
+                        .rotationEffect(.degrees(-45))
+                }
+                .offset(x: 22, y: 18)
+            }
+            .frame(width: 140, height: 140)
+            VStack(spacing: 6) {
+                Text("Busque times e campeonatos")
+                    .font(.display(17, weight: 760))
+                    .foregroundStyle(Palette.ink)
+                Text("Digite o nome de um time ou de uma competição.")
+                    .font(.ui(13))
+                    .foregroundStyle(Palette.inkSoft)
+            }
+            .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 70)
     }
 }
