@@ -111,10 +111,21 @@ struct FeedClient: Sendable {
     }
 
     func day(offset: Int) async throws -> [Competition] {
-        var request = URLRequest(url: URL(string: "\(Self.brazilBase)f_1_\(offset)_3_pt-br_1")!)
+        let zone = TimeZone.current.secondsFromGMT() / 3600
+        var request = URLRequest(url: URL(string: "\(Self.brazilBase)f_1_\(offset)_\(zone)_pt-br_1")!)
         request.setValue(LeagueConfig.defaultSign, forHTTPHeaderField: "x-fsign")
         request.setValue("https://www.flashscore.com.br/", forHTTPHeaderField: "Referer")
-        return DayFeed.competitions(in: try await text(request))
+        let calendar = Calendar.current
+        guard let target = calendar.date(byAdding: .day, value: offset, to: calendar.startOfDay(for: .now)) else {
+            return DayFeed.competitions(in: try await text(request))
+        }
+        return DayFeed.competitions(in: try await text(request)).compactMap { competition in
+            var competition = competition
+            competition.matches = competition.matches.filter {
+                $0.phase.isLive || calendar.isDate($0.kickoff, inSameDayAs: target)
+            }
+            return competition.matches.isEmpty ? nil : competition
+        }
     }
 
     func searchTeams(_ query: String) async throws -> [TeamHit] {
